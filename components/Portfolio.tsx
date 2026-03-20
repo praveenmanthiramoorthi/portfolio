@@ -60,23 +60,40 @@ const filters = ['All', 'Poster', 'Reel', 'Website'];
 
 type FilterType = 'All' | 'Poster' | 'Reel' | 'Website';
 
+interface Work {
+  id: string;
+  title: string;
+  description: string;
+  category: 'Poster' | 'Reel' | 'Website';
+  imageUrl: string;
+  url?: string;
+  gradient: string;
+}
+
 export default function Portfolio() {
   const [activeFilter, setActiveFilter] = useState<FilterType>('All');
-  const [works, setWorks] = useState(defaultWorks);
+  const [works, setWorks] = useState<Work[]>(
+    defaultWorks.map((w) => ({
+      ...w,
+      category: w.category as 'Poster' | 'Reel' | 'Website',
+      url: undefined,
+    }))
+  );
 
   useEffect(() => {
     const saved = getWorks();
     if (saved.length > 0) {
-      const mapped = saved.map((w: WorkItem) => ({
+
+      const mapped: Work[] = saved.map((w: WorkItem) => ({
         id: w.id,
         title: w.title,
         description: w.description,
-        category: w.category as 'Poster' | 'Reel' | 'Website',
+        category: w.category,
         imageUrl: w.imageUrl,
         url: w.url,
         gradient: 'linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%)',
       }));
-      setWorks([...mapped, ...defaultWorks]);
+      setWorks([...mapped, ...defaultWorks.map(w => ({ ...w, category: w.category as any, url: undefined }))]);
     }
   }, []);
 
@@ -240,7 +257,7 @@ export default function Portfolio() {
                   >
                     {work.description}
                   </p>
-                  {'url' in work && work.url && (
+                  {work.url && (
                     <a
                       href={work.url}
                       target="_blank"
